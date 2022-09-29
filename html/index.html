@@ -28,7 +28,14 @@
       const login = document.getElementById("login").value;
       const password = document.getElementById("password").value;
 
-      if (/)
+      if (!/[a-z]/gi.test(password) || !/[0-9]/g.test(password)) {
+        alert("password require letters and numbers");
+        return;
+      }
+      if (password.length < 6) {
+        alert("password must be at least 6 symbols long");
+        return;
+      }
 
       const hash = CryptoJS.SHA512(password).toString();
       console.log(login, password, hash);
