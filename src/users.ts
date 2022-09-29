@@ -84,6 +84,8 @@ export default class User implements IUser {
 
   static async register(login: string, hash: string): Promise<RegisterResult> {
     try {
+      const user = await User.find(login);
+      if (user) return "login";
       const result = await getDatabase().run(
         "INSERT INTO users (login, hash) VALUES (?,?)",
         login,
