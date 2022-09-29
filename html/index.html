@@ -1,0 +1,44 @@
+<head>
+  <title>Main</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+<body>
+  <input id="login" type="text" />
+  <br />
+  <input id="password" type="password" />
+  <br />
+  <button id="submit">Log in</button>
+  <br />
+  <button id="register">Sign up</button>
+  <script>
+    document.getElementById("submit").addEventListener("click", async () => {
+      const login = document.getElementById("login").value;
+      const password = document.getElementById("password").value;
+      const hash = CryptoJS.SHA512(password).toString();
+      console.log(login, password, hash);
+      const res = await fetch("/login", {
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+        body: JSON.stringify({ login, hash }),
+      });
+      const answer = await res.json();
+      console.log(answer);
+    });
+    document.getElementById("register").addEventListener("click", async () => {
+      const login = document.getElementById("login").value;
+      const password = document.getElementById("password").value;
+
+      if (/)
+
+      const hash = CryptoJS.SHA512(password).toString();
+      console.log(login, password, hash);
+      const res = await fetch("/user", {
+        headers: { "Content-Type": "application/json" },
+        method: "PUT",
+        body: JSON.stringify({ login, hash }),
+      });
+      const answer = await res.json();
+      console.log(answer);
+    });
+  </script>
+</body>
