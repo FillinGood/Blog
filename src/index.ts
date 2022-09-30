@@ -15,7 +15,7 @@ import User from "./users";
     file.pipe(res);
   });
 
-  app.post("/login", async (req, res) => {
+  app.post("/api/login", async (req, res) => {
     const login = req.body.login;
     const hash = req.body.hash;
 
@@ -53,7 +53,7 @@ import User from "./users";
     }
   });
 
-  app.put("/user", async (req, res) => {
+  app.put("/api/user", async (req, res) => {
     const login = req.body.login;
     const hash = req.body.hash;
 
@@ -98,6 +98,58 @@ import User from "./users";
       message: "OK",
       id: result.id,
     });
+  });
+
+  app.get("/api/user", async (req, res) => {
+    const qid = req.query.id as string | undefined;
+    const login = req.query.login as string | undefined;
+
+    if (qid) {
+      const id = +qid;
+      if (isNaN(id)) {
+        res.status(400);
+        res.json({
+          code: 400,
+          message: "id must be a number",
+        });
+      } else {
+        const user = await User.get(+id);
+        if (!user) {
+          res.status(404);
+          res.json({
+            code: 404,
+            message: "user not found",
+          });
+        } else {
+          res.json({
+            code: 200,
+            message: "OK",
+            user: { id: user.id, name: user.login },
+          });
+        }
+      }
+    } else if (login) {
+      const user = await User.find(login);
+      if (!user) {
+        res.status(404);
+        res.json({
+          code: 404,
+          message: "user not found",
+        });
+      } else {
+        res.json({
+          code: 200,
+          message: "OK",
+          user: { id: user.id, name: user.login },
+        });
+      }
+    } else {
+      res.status(400);
+      res.json({
+        code: 400,
+        message: "id or login required",
+      });
+    }
   });
 
   app.listen(8080, () => console.log("started"));
