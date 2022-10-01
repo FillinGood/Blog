@@ -13,8 +13,6 @@ function send(res: express.Response, code: number, message: string, data?: objec
 }
 
 (async () => {
-  await open('db.db');
-
   const app = express();
   app.use(express.json());
 
@@ -60,7 +58,7 @@ function send(res: express.Response, code: number, message: string, data?: objec
       const id = +qid;
       if (isNaN(id)) return send(res, 400, 'id must be a number');
 
-      const user = await User.get(+id);
+      const user = await User.get(id);
       if (!user) return send(res, 404, 'user not found');
       return ok(res, { user: { id: user.id, name: user.login } });
     }
@@ -71,6 +69,8 @@ function send(res: express.Response, code: number, message: string, data?: objec
     }
     send(res, 400, 'id or login required');
   });
+
+  await open('db.db');
 
   app.listen(8080, () => console.log('started'));
 })();
