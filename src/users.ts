@@ -1,4 +1,4 @@
-import { getDatabase } from "./db";
+import { getDatabase } from './db';
 
 export interface IUser {
   id: number;
@@ -6,7 +6,7 @@ export interface IUser {
   hash: string;
 }
 
-export type RegisterResult = User | "login" | "unknown";
+export type RegisterResult = User | 'login' | 'unknown';
 
 export default class User implements IUser {
   private _id: number;
@@ -32,7 +32,7 @@ export default class User implements IUser {
   async setLogin(login: string) {
     try {
       const result = await getDatabase().run(
-        "UPDATE users SET login = ? WHERE id = ?",
+        'UPDATE users SET login = ? WHERE id = ?',
         login,
         this.id
       );
@@ -46,7 +46,7 @@ export default class User implements IUser {
   async setHash(hash: string) {
     try {
       const result = await getDatabase().run(
-        "UPDATE users SET hash = ? WHERE id = ?",
+        'UPDATE users SET hash = ? WHERE id = ?',
         hash,
         this.id
       );
@@ -58,16 +58,13 @@ export default class User implements IUser {
   }
 
   static async get(id: number) {
-    const user = await getDatabase().get<IUser>(
-      "SELECT * FROM users WHERE id = ?",
-      id
-    );
+    const user = await getDatabase().get<IUser>('SELECT * FROM users WHERE id = ?', id);
     return user ? new User(user) : undefined;
   }
 
   static async find(login: string) {
     const user = await getDatabase().get<IUser>(
-      "SELECT * FROM users WHERE login = ?",
+      'SELECT * FROM users WHERE login = ?',
       login
     );
     return user ? new User(user) : undefined;
@@ -75,19 +72,19 @@ export default class User implements IUser {
 
   static async auth(login: string, hash: string) {
     const user = await getDatabase().get<IUser>(
-      "SELECT id FROM users WHERE login = ? AND hash = ?",
+      'SELECT id FROM users WHERE login = ? AND hash = ?',
       login,
       hash
     );
-    return !!user;
+    return user ? new User(user) : undefined;
   }
 
   static async register(login: string, hash: string): Promise<RegisterResult> {
     try {
       const user = await User.find(login);
-      if (user) return "login";
+      if (user) return 'login';
       const result = await getDatabase().run(
-        "INSERT INTO users (login, hash) VALUES (?,?)",
+        'INSERT INTO users (login, hash) VALUES (?,?)',
         login,
         hash
       );
@@ -95,7 +92,7 @@ export default class User implements IUser {
       return new User({ id: result.lastID, login, hash });
     } catch (e: any) {
       console.error(e);
-      return "unknown";
+      return 'unknown';
     }
   }
 }

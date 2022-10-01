@@ -1,6 +1,7 @@
 import express from 'express';
 import fs from 'fs';
 import { open } from './db';
+import Session from './sessions';
 import User from './users';
 
 function ok(res: express.Response, data?: object) {
@@ -29,10 +30,11 @@ function send(res: express.Response, code: number, message: string, data?: objec
     if (typeof login !== 'string' || !login) return send(res, 400, 'login required');
     if (typeof hash !== 'string' || !hash) return send(res, 400, 'hash required');
 
-    const success = await User.auth(login, hash);
+    const user = await User.auth(login, hash);
+    if (!user) return send(res, 401, 'wrong login or password');
 
-    if (success) ok(res);
-    else send(res, 401, 'wrong login or password');
+    const s = await Session.create(user);
+    ok(res, { session: s.token });
   });
 
   app.put('/api/user', async (req, res) => {
@@ -42,12 +44,13 @@ function send(res: express.Response, code: number, message: string, data?: objec
     if (typeof login !== 'string' || !login) return send(res, 400, 'login required');
     if (typeof hash !== 'string' || !hash) return send(res, 400, 'hash required');
 
-    const result = await User.register(login, hash);
+    const user = await User.register(login, hash);
 
-    if (result === 'unknown') return send(res, 500, 'unknown error');
-    if (result === 'login') return send(res, 400, 'login already exists');
+    if (user === 'unknown') return send(res, 500, 'unknown error');
+    if (user === 'login') return send(res, 400, 'login already exists');
 
-    ok(res, { id: result.id });
+    const s = await Session.create(user);
+    ok(res, { session: s.token });
   });
 
   app.get('/api/user', async (req, res) => {
