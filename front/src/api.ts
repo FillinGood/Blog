@@ -1,20 +1,25 @@
 import CryptoJS from 'crypto-js';
 import { UserInfo } from './redux/store';
 
+// #region Base
 type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+type HTTPStatus = 200 | 400 | 401 | 404 | 500;
 
-export interface APIResponse {
-  code: number;
+export interface APIResponseBase {
+  code: HTTPStatus;
   message: string;
 }
-
-export interface RegisterAPIResponse extends APIResponse {
-  id?: number;
+export interface APIResponseError extends APIResponseBase {
+  code: Exclude<HTTPStatus, 200>;
 }
-
-export interface GetUserAPIResponse extends APIResponse {
-  user?: UserInfo;
+export interface APIResponseSuccess extends APIResponseBase {
+  code: 200;
 }
+type APIResponse<T extends object> = (T & APIResponseSuccess) | APIResponseError;
+// #endregion
+
+export type RegisterAPIResponse = APIResponse<{ id: number }>;
+export type GetUserAPIResponse = APIResponse<{ user: UserInfo }>;
 
 async function fetchAPI<T>(
   endpoint: string,
@@ -40,7 +45,7 @@ const api = {
   getUser,
   login(login: string, password: string) {
     const hash = CryptoJS.SHA512(password).toString();
-    return fetchAPI<APIResponse>('login', 'POST', { login, hash });
+    return fetchAPI<APIResponseBase>('login', 'POST', { login, hash });
   },
 
   register(login: string, password: string) {

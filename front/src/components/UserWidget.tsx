@@ -26,7 +26,7 @@ function NotLogged() {
 
     if (res.code === 200) {
       const user = await api.getUser(login);
-      dispatch(actions.setUser(user.user));
+      if (user.code === 200) dispatch(actions.setUser(user.user));
     } else {
       alert(res.message);
     }
@@ -41,7 +41,7 @@ function NotLogged() {
 
     if (res.code === 200) {
       const user = await api.getUser(login);
-      dispatch(actions.setUser(user.user));
+      if (user.code === 200) dispatch(actions.setUser(user.user));
     } else {
       alert(res.message);
     }
