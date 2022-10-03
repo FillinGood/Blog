@@ -1,5 +1,6 @@
 import express from 'express';
 import fs from 'fs';
+import mime from 'mime';
 import { open } from './db';
 import Session from './sessions';
 import User from './users';
@@ -16,17 +17,6 @@ function send(res: express.Response, code: number, message: string, data?: objec
 (async () => {
   const app = express();
   app.use(express.json());
-
-  app.get('/', (req, res) => {
-    const file = fs.createReadStream('static/index.html');
-    res.header('Content-Type', 'text/html');
-    file.pipe(res);
-  });
-  app.get('/bundle.js', (req, res) => {
-    const file = fs.createReadStream('static/bundle.js');
-    res.header('Content-Type', 'text/javascript');
-    file.pipe(res);
-  });
 
   app.post('/api/login', async (req, res) => {
     const login = req.body.login;
@@ -92,6 +82,17 @@ function send(res: express.Response, code: number, message: string, data?: objec
     if (!session) return send(res, 404, 'session not found');
     await session.delete();
     ok(res);
+  });
+
+  app.get('/*', (req, res, next) => {
+    const filepath = 'static/' + (req.path.substring(1) || 'index.html');
+    if (!fs.existsSync(filepath)) {
+      next();
+      return;
+    }
+    const file = fs.createReadStream(filepath);
+    res.header('Content-Type', mime.getType(filepath) ?? 'application/octet-stream');
+    file.pipe(res);
   });
 
   await open('db.db');
