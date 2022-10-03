@@ -55,6 +55,14 @@ function getUser(arg: number | string): Promise<GetUserAPIResponse> {
 const api = {
   getUser,
   /**
+   * get user by session token
+   * @param token session token
+   * @returns APIResponse with user info
+   */
+  getUserByToken(token: string) {
+    return fetchAPI<GetUserAPIResponse>(`user?token=${token}`, 'GET');
+  },
+  /**
    * authorize user
    * @param login user login
    * @param password user password

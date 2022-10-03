@@ -56,6 +56,7 @@ function send(res: express.Response, code: number, message: string, data?: objec
   app.get('/api/user', async (req, res) => {
     const qid = req.query.id as string | undefined;
     const login = req.query.login as string | undefined;
+    const token = req.query.token as string | undefined;
 
     if (qid) {
       const id = +qid;
@@ -70,7 +71,12 @@ function send(res: express.Response, code: number, message: string, data?: objec
       if (!user) return send(res, 404, 'user not found');
       return ok(res, { user: { id: user.id, name: user.login } });
     }
-    send(res, 400, 'id or login required');
+    if (token) {
+      const session = await Session.get(token);
+      if (!session) return send(res, 404, 'session not found');
+      return ok(res, { user: { id: session.user.id, name: session.user.login } });
+    }
+    send(res, 400, 'id, login or token required');
   });
 
   await open('db.db');
