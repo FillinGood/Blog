@@ -18,8 +18,6 @@ export interface APIResponseSuccess extends APIResponseBase {
 type APIResponse<T extends object> = (T & APIResponseSuccess) | APIResponseError;
 // #endregion
 
-export type RegisterAPIResponse = APIResponse<{ session: string }>;
-export type LoginAPIResponse = APIResponse<{ session: string }>;
 export type GetUserAPIResponse = APIResponse<{ user: UserInfo }>;
 
 async function fetchAPI<T>(
@@ -70,7 +68,7 @@ const api = {
    */
   login(login: string, password: string) {
     const hash = SHA512(password).toString();
-    return fetchAPI<LoginAPIResponse>('login', 'POST', { login, hash });
+    return fetchAPI<APIResponseBase>('login', 'POST', { login, hash });
   },
 
   /**
@@ -81,11 +79,11 @@ const api = {
    */
   register(login: string, password: string) {
     const hash = SHA512(password).toString();
-    return fetchAPI<RegisterAPIResponse>('user', 'PUT', { login, hash });
+    return fetchAPI<APIResponseBase>('user', 'PUT', { login, hash });
   },
 
-  logOut(token: string) {
-    return fetchAPI<APIResponseBase>('session', 'DELETE', { token });
+  logOut() {
+    return fetchAPI<APIResponseBase>('session', 'DELETE');
   }
 };
 

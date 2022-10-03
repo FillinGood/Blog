@@ -25,7 +25,6 @@ function NotLogged() {
     const res = await api.login(login, password);
 
     if (res.code === 200) {
-      Cookies.set('token', res.session, { expires: 1 });
       window.location.reload();
     } else {
       alert(res.message);
@@ -40,7 +39,6 @@ function NotLogged() {
     const res = await api.register(login, password);
 
     if (res.code === 200) {
-      Cookies.set('token', res.session, { expires: 1 });
       window.location.reload();
     } else {
       alert(res.message);
@@ -66,12 +64,8 @@ function NotLogged() {
 }
 
 function LoggedIn({ user }: { user: UserInfo }) {
-  function OnLogOut() {
-    const token = Cookies.get('token');
-    if (token) {
-      api.logOut(token);
-      Cookies.remove('token');
-    }
+  async function OnLogOut() {
+    await api.logOut();
     window.location.reload();
   }
 

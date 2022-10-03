@@ -10,5 +10,7 @@ export interface StoreState {
   user?: UserInfo;
 }
 
-export const preloadedState: StoreState = { user: undefined };
+declare const user: UserInfo | undefined;
+
+export const preloadedState: StoreState = { user };
 export const store = configureStore({ reducer, devTools: true, preloadedState });

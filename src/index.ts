@@ -1,8 +1,9 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import fs from 'fs';
 import mime from 'mime';
 import { open } from './db';
-import Session from './sessions';
+import Session, { sessionLife } from './sessions';
 import User from './users';
 
 function ok(res: express.Response, data?: object) {
@@ -17,6 +18,8 @@ function send(res: express.Response, code: number, message: string, data?: objec
 (async () => {
   const app = express();
   app.use(express.json());
+  app.use(cookieParser());
+  app.set('view engine', 'ejs');
 
   app.post('/api/login', async (req, res) => {
     const login = req.body.login;
@@ -29,7 +32,8 @@ function send(res: express.Response, code: number, message: string, data?: objec
     if (!user) return send(res, 401, 'wrong login or password');
 
     const s = await Session.create(user);
-    ok(res, { session: s.token });
+    res.cookie('token', s.token, { maxAge: sessionLife * 1000 });
+    ok(res);
   });
 
   app.put('/api/user', async (req, res) => {
@@ -45,7 +49,8 @@ function send(res: express.Response, code: number, message: string, data?: objec
     if (user === 'login') return send(res, 400, 'login already exists');
 
     const s = await Session.create(user);
-    ok(res, { session: s.token });
+    res.cookie('token', s.token, { maxAge: sessionLife * 1000 });
+    ok(res);
   });
 
   app.get('/api/user', async (req, res) => {
@@ -75,24 +80,39 @@ function send(res: express.Response, code: number, message: string, data?: objec
   });
 
   app.delete('/api/session', async (req, res) => {
-    const token = req.body.token as string | undefined;
-    if (typeof token !== 'string' || !token) return send(res, 400, 'token required');
+    const token = req.cookies.token as string | undefined;
+    if (!token) return ok(res);
 
     const session = await Session.get(token);
-    if (!session) return send(res, 404, 'session not found');
+    if (!session) return ok(res);
     await session.delete();
+    res.cookie('token', '', { expires: new Date(0) });
     ok(res);
   });
 
-  app.get('/*', (req, res, next) => {
-    const filepath = 'static/' + (req.path.substring(1) || 'index.html');
+  app.get('/static/*', (req, res) => {
+    const filepath = '.' + req.path;
     if (!fs.existsSync(filepath)) {
-      next();
+      res.status(404).end('404');
       return;
     }
     const file = fs.createReadStream(filepath);
     res.header('Content-Type', mime.getType(filepath) ?? 'application/octet-stream');
     file.pipe(res);
+  });
+
+  app.get('/', async (req, res, next) => {
+    const token = req.cookies.token as string | undefined;
+    const context: any = { script: 'const user = undefined;' };
+    if (token) {
+      const session = await Session.get(token);
+      if (session && !session.expired) {
+        const user = session.user;
+        context.script = `const user = {id:${user.id}, name:'${user.login}'};`;
+      }
+    }
+    context.title = 'On-G.R.D.';
+    res.render('index', context);
   });
 
   await open('db.db');

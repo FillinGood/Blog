@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import App from './components/App';
+import Header from './components/Header';
 import { store } from './redux/store';
 
 document.onreadystatechange = () => {
@@ -11,8 +12,14 @@ document.onreadystatechange = () => {
 
   ReactDOM.render(
     <Provider store={store}>
+      <Header />
+    </Provider>,
+    document.getElementById('header')
+  );
+  ReactDOM.render(
+    <Provider store={store}>
       <App />
     </Provider>,
-    document.getElementById('App')
+    document.getElementById('app')
   );
 };
