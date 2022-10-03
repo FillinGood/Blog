@@ -1,4 +1,4 @@
-import CryptoJS from 'crypto-js';
+import SHA512 from 'crypto-js/SHA512';
 import { UserInfo } from './redux/store';
 
 // #region Base
@@ -69,7 +69,7 @@ const api = {
    * @returns APIResponse with session token
    */
   login(login: string, password: string) {
-    const hash = CryptoJS.SHA512(password).toString();
+    const hash = SHA512(password).toString();
     return fetchAPI<LoginAPIResponse>('login', 'POST', { login, hash });
   },
 
@@ -80,7 +80,7 @@ const api = {
    * @returns APIResponse with session token
    */
   register(login: string, password: string) {
-    const hash = CryptoJS.SHA512(password).toString();
+    const hash = SHA512(password).toString();
     return fetchAPI<RegisterAPIResponse>('user', 'PUT', { login, hash });
   },
 
