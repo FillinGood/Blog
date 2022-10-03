@@ -35,7 +35,17 @@ async function fetchAPI<T>(
   return res.json();
 }
 
+/**
+ * gets user by id
+ * @param id user id
+ * @returns APIResponse with user info
+ */
 function getUser(id: number): Promise<GetUserAPIResponse>;
+/**
+ * gets user by login
+ * @param login user login
+ * @returns APIResponse with user info
+ */
 function getUser(login: string): Promise<GetUserAPIResponse>;
 function getUser(arg: number | string): Promise<GetUserAPIResponse> {
   if (typeof arg === 'number')
@@ -44,11 +54,23 @@ function getUser(arg: number | string): Promise<GetUserAPIResponse> {
 }
 const api = {
   getUser,
+  /**
+   * authorize user
+   * @param login user login
+   * @param password user password
+   * @returns APIResponse with session token
+   */
   login(login: string, password: string) {
     const hash = CryptoJS.SHA512(password).toString();
     return fetchAPI<LoginAPIResponse>('login', 'POST', { login, hash });
   },
 
+  /**
+   * register user
+   * @param login user login
+   * @param password user password
+   * @returns APIResponse with session token
+   */
   register(login: string, password: string) {
     const hash = CryptoJS.SHA512(password).toString();
     return fetchAPI<RegisterAPIResponse>('user', 'PUT', { login, hash });
