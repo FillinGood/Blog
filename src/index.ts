@@ -79,6 +79,16 @@ function send(res: express.Response, code: number, message: string, data?: objec
     send(res, 400, 'id, login or token required');
   });
 
+  app.delete('/api/session', async (req, res) => {
+    const token = req.body.token as string | undefined;
+    if (typeof token !== 'string' || !token) return send(res, 400, 'token required');
+
+    const session = await Session.get(token);
+    if (!session) return send(res, 404, 'session not found');
+    await session.delete();
+    ok(res);
+  });
+
   await open('db.db');
 
   app.listen(8080, () => console.log('started'));

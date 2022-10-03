@@ -82,6 +82,10 @@ const api = {
   register(login: string, password: string) {
     const hash = CryptoJS.SHA512(password).toString();
     return fetchAPI<RegisterAPIResponse>('user', 'PUT', { login, hash });
+  },
+
+  logOut(token: string) {
+    return fetchAPI<APIResponseBase>('session', 'DELETE', { token });
   }
 };
 

@@ -1,5 +1,6 @@
 import React from 'react';
-import { actions, dispatcher, select } from '../redux';
+import Cookies from 'js-cookie';
+import { select } from '../redux';
 import api from '../api';
 import { UserInfo } from '../redux/store';
 
@@ -13,7 +14,6 @@ export default function UserWidget() {
 }
 
 function NotLogged() {
-  const dispatch = dispatcher();
   const refLogin = React.createRef<HTMLInputElement>();
   const refPassword = React.createRef<HTMLInputElement>();
 
@@ -25,8 +25,8 @@ function NotLogged() {
     const res = await api.login(login, password);
 
     if (res.code === 200) {
-      const user = await api.getUser(login);
-      if (user.code === 200) dispatch(actions.setUser(user.user));
+      Cookies.set('token', res.session, { expires: 1 });
+      window.location.reload();
     } else {
       alert(res.message);
     }
@@ -40,8 +40,8 @@ function NotLogged() {
     const res = await api.register(login, password);
 
     if (res.code === 200) {
-      const user = await api.getUser(login);
-      if (user.code === 200) dispatch(actions.setUser(user.user));
+      Cookies.set('token', res.session, { expires: 1 });
+      window.location.reload();
     } else {
       alert(res.message);
     }
@@ -66,10 +66,13 @@ function NotLogged() {
 }
 
 function LoggedIn({ user }: { user: UserInfo }) {
-  const dispatch = dispatcher();
-
   function OnLogOut() {
-    dispatch(actions.setUser());
+    const token = Cookies.get('token');
+    if (token) {
+      api.logOut(token);
+      Cookies.remove('token');
+    }
+    window.location.reload();
   }
 
   return (
