@@ -6,6 +6,5 @@ export interface UserInfo {
 export interface PageContext {
   title: string;
   page: string;
-  script: string;
-  user?: UserInfo;
+  user: UserInfo | null;
 }

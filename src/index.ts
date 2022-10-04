@@ -104,15 +104,14 @@ function send(res: express.Response, code: number, message: string, data?: objec
   app.use(async (req, res, next) => {
     const token = req.cookies.token as string | undefined;
     req.context = {
-      script: 'const user = undefined;',
       title: 'On-G.R.D.',
-      page: 'title'
+      page: 'title',
+      user: null
     };
     if (token) {
       const session = await Session.get(token);
       if (session && !session.expired) {
         const user = session.user;
-        req.context.script = `const user = {id:${user.id}, name:'${user.login}'};`;
         req.context.user = { id: user.id, name: user.login };
       }
     }

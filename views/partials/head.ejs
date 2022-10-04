@@ -1,5 +1,5 @@
 <title><%= title %></title>
 <script>
-  <%- script %>
+  const user = <%- user?("{id:"+user.id+", name:'"+user.name+"'}"): "undefined" %>;
 </script>
 <script src="./static/bundle.js"></script>
