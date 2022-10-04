@@ -103,7 +103,11 @@ function send(res: express.Response, code: number, message: string, data?: objec
 
   app.get('/', async (req, res, next) => {
     const token = req.cookies.token as string | undefined;
-    const context: any = { script: 'const user = undefined;' };
+    const context: any = {
+      script: 'const user = undefined;',
+      title: 'On-G.R.D.',
+      page: 'title'
+    };
     if (token) {
       const session = await Session.get(token);
       if (session && !session.expired) {
@@ -111,7 +115,27 @@ function send(res: express.Response, code: number, message: string, data?: objec
         context.script = `const user = {id:${user.id}, name:'${user.login}'};`;
       }
     }
-    context.title = 'On-G.R.D.';
+    res.render('index', context);
+  });
+
+  app.get('/page/:page', async (req, res, next) => {
+    if (!fs.existsSync('./views/pages/' + req.params.page)) {
+      next();
+      return;
+    }
+    const token = req.cookies.token as string | undefined;
+    const context: any = {
+      script: 'const user = undefined;',
+      title: 'On-G.R.D.',
+      page: req.params.page
+    };
+    if (token) {
+      const session = await Session.get(token);
+      if (session && !session.expired) {
+        const user = session.user;
+        context.script = `const user = {id:${user.id}, name:'${user.login}'};`;
+      }
+    }
     res.render('index', context);
   });
 
