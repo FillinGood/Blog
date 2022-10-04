@@ -139,6 +139,23 @@ function send(res: express.Response, code: number, message: string, data?: objec
     res.render('index', context);
   });
 
+  app.get('*', async (req, res, next) => {
+    const token = req.cookies.token as string | undefined;
+    const context: any = {
+      script: 'const user = undefined;',
+      title: 'On-G.R.D.',
+      page: '404'
+    };
+    if (token) {
+      const session = await Session.get(token);
+      if (session && !session.expired) {
+        const user = session.user;
+        context.script = `const user = {id:${user.id}, name:'${user.login}'};`;
+      }
+    }
+    res.render('index', context);
+  });
+
   await open('db.db');
 
   app.listen(8080, () => console.log('started'));
