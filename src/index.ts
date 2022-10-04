@@ -101,9 +101,9 @@ function send(res: express.Response, code: number, message: string, data?: objec
     file.pipe(res);
   });
 
-  app.get('/', async (req, res, next) => {
+  app.use(async (req, res, next) => {
     const token = req.cookies.token as string | undefined;
-    const context: any = {
+    req.context = {
       script: 'const user = undefined;',
       title: 'On-G.R.D.',
       page: 'title'
@@ -112,10 +112,15 @@ function send(res: express.Response, code: number, message: string, data?: objec
       const session = await Session.get(token);
       if (session && !session.expired) {
         const user = session.user;
-        context.script = `const user = {id:${user.id}, name:'${user.login}'};`;
+        req.context.script = `const user = {id:${user.id}, name:'${user.login}'};`;
+        req.context.user = { id: user.id, name: user.login };
       }
     }
-    res.render('index', context);
+    next();
+  });
+
+  app.get('/', async (req, res, next) => {
+    res.render('index', req.context);
   });
 
   app.get('/page/:page', async (req, res, next) => {
@@ -123,37 +128,13 @@ function send(res: express.Response, code: number, message: string, data?: objec
       next();
       return;
     }
-    const token = req.cookies.token as string | undefined;
-    const context: any = {
-      script: 'const user = undefined;',
-      title: 'On-G.R.D.',
-      page: req.params.page
-    };
-    if (token) {
-      const session = await Session.get(token);
-      if (session && !session.expired) {
-        const user = session.user;
-        context.script = `const user = {id:${user.id}, name:'${user.login}'};`;
-      }
-    }
-    res.render('index', context);
+    req.context.page = req.params.page;
+    res.render('index', req.context);
   });
 
   app.get('*', async (req, res, next) => {
-    const token = req.cookies.token as string | undefined;
-    const context: any = {
-      script: 'const user = undefined;',
-      title: 'On-G.R.D.',
-      page: '404'
-    };
-    if (token) {
-      const session = await Session.get(token);
-      if (session && !session.expired) {
-        const user = session.user;
-        context.script = `const user = {id:${user.id}, name:'${user.login}'};`;
-      }
-    }
-    res.render('index', context);
+    req.context.page = '404';
+    res.render('index', req.context);
   });
 
   await open('db.db');
