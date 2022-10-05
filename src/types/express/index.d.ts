@@ -7,5 +7,9 @@ declare global {
     export interface Request {
       context: PageContext;
     }
+    export interface Response {
+      answer(code: number, answer: string, data?: object): void;
+      answerOk(data?: object): void;
+    }
   }
 }
