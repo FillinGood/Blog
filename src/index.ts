@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { ErrorRequestHandler } from 'express';
 import cookieParser from 'cookie-parser';
 import './extentions';
 import { open } from './db';
@@ -7,6 +7,7 @@ import apiRoute from './routes/api';
 import staticRoute from './routes/static';
 import pageRoute from './routes/page';
 import route404 from './routes/404';
+import { ValidationError } from './validation';
 
 (async () => {
   const app = express();
@@ -20,6 +21,14 @@ import route404 from './routes/404';
   app.use(sessionMiddleware);
   app.use('*', pageRoute);
   app.use(route404);
+
+  app.use(((err, req, res, next) => {
+    if (err instanceof ValidationError) {
+      res.answer(400, err.message);
+    } else {
+      next(err);
+    }
+  }) as ErrorRequestHandler);
 
   await open('db.db');
 

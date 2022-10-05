@@ -1,14 +1,13 @@
-import { Router } from 'express';
+import express from 'express';
 import Session, { sessionLife } from '../sessions';
 import User from '../users';
+import { validate } from '../validation';
 
-const apiRoute = Router()
+const apiRoute = express
+  .Router()
   .post('/login', async (req, res) => {
-    const login = req.body.login;
-    const hash = req.body.hash;
-
-    if (typeof login !== 'string' || !login) return res.answer(400, 'login required');
-    if (typeof hash !== 'string' || !hash) return res.answer(400, 'hash required');
+    const login = validate.required.notEmpty.string('login', req.body.login);
+    const hash = validate.required.notEmpty.string('hash', req.body.hash);
 
     const user = await User.auth(login, hash);
     if (!user) return res.answer(401, 'wrong login or password');
@@ -19,11 +18,8 @@ const apiRoute = Router()
   })
 
   .put('/user', async (req, res) => {
-    const login = req.body.login;
-    const hash = req.body.hash;
-
-    if (typeof login !== 'string' || !login) return res.answer(400, 'login required');
-    if (typeof hash !== 'string' || !hash) return res.answer(400, 'hash required');
+    const login = validate.required.notEmpty.string('login', req.body.login);
+    const hash = validate.required.notEmpty.string('hash', req.body.hash);
 
     const user = await User.register(login, hash);
 
