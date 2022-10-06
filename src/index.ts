@@ -19,7 +19,7 @@ import { ValidationError } from './validation';
   app.use('/api', apiRoute);
   app.use('/static', staticRoute);
   app.use(sessionMiddleware);
-  app.use('*', pageRoute);
+  app.use('/', pageRoute);
   app.use(route404);
 
   app.use(((err, req, res, next) => {
