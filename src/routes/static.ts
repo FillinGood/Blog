@@ -2,12 +2,13 @@ import express from 'express';
 import fs from 'fs';
 import mime from 'mime';
 import path from 'path';
+import rootpath from '../rootpath';
 
 const staticRoute = express
   .Router()
 
   .get('/*', (req, res) => {
-    const filepath = path.join(__dirname, '../../static' + req.path);
+    const filepath = rootpath('static' + req.path);
     if (!fs.existsSync(filepath)) {
       res.status(404).end('404');
       return;
