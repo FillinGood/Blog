@@ -1,5 +1,5 @@
 import express from 'express';
-import Session from './sessions';
+import Session, { sessionLife } from './sessions';
 
 export async function sessionMiddleware(
   req: express.Request,
@@ -14,9 +14,18 @@ export async function sessionMiddleware(
   };
   if (token) {
     const session = await Session.get(token);
-    if (session && !session.expired) {
-      const user = session.user;
-      req.context.user = { id: user.id, name: user.login };
+    if (session) {
+      if (session.expired) {
+        await session.delete();
+        res.cookie('token', '', { maxAge: -1 });
+      } else {
+        await session.refresh();
+        res.cookie('token', session.token, { maxAge: sessionLife * 1000 });
+        const user = session.user;
+        req.context.user = { id: user.id, name: user.login };
+      }
+    } else {
+      res.cookie('token', '', { maxAge: -1 });
     }
   }
   next();
