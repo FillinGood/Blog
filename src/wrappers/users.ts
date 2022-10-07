@@ -1,4 +1,4 @@
-import { getDatabase } from './db';
+import { getDatabase } from '../db';
 
 /** user representation in database */
 export interface IUser {

@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import { getDatabase } from './db';
+import { getDatabase } from '../db';
 import User from './users';
 
 /** session representation in database */

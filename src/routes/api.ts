@@ -1,6 +1,6 @@
 import express from 'express';
-import Session, { sessionLife } from '../sessions';
-import User from '../users';
+import Session, { sessionLife } from '../wrappers/sessions';
+import User from '../wrappers/users';
 import { validate } from '../validation';
 
 const apiRoute = express

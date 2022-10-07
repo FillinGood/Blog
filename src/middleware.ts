@@ -1,5 +1,5 @@
 import express from 'express';
-import Session, { sessionLife } from './sessions';
+import Session, { sessionLife } from './wrappers/sessions';
 
 export async function sessionMiddleware(
   req: express.Request,
