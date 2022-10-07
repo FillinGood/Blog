@@ -56,7 +56,11 @@ export default class User implements IUser {
         login,
         this.id
       );
-      return result.changes === 1;
+      if (result.changes === 1) {
+        this._login = login;
+        return true;
+      }
+      return false;
     } catch (e: any) {
       console.error(e);
       return false;
@@ -75,7 +79,11 @@ export default class User implements IUser {
         hash,
         this.id
       );
-      return result.changes === 1;
+      if (result.changes === 1) {
+        this._hash = hash;
+        return true;
+      }
+      return false;
     } catch (e: any) {
       console.error(e);
       return false;
