@@ -1,7 +1,13 @@
-import sqlite3 from "sqlite3";
+import sqlite3 from 'sqlite3';
 
 class Database {
-  private constructor(private db: sqlite3.Database) {}
+  private constructor(private db: sqlite3.Database) {
+    // db.on('trace', this.trace.bind(this));
+  }
+
+  private trace(sql: string) {
+    console.debug('>', sql);
+  }
 
   static create(filename: string) {
     return new Promise<Database>((res, rej) => {
