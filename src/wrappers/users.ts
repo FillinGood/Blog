@@ -1,10 +1,12 @@
 import { getDatabase } from '../db';
+import Group from './groups';
 
 /** user representation in database */
 export interface IUser {
   id: number;
   login: string;
   hash: string;
+  groupid: number;
 }
 
 /**
@@ -17,10 +19,6 @@ export type RegisterResult = User | 'login' | 'unknown';
 
 /** wrapper on IUser */
 export default class User implements IUser {
-  private _id: number;
-  private _login: string;
-  private _hash: string;
-
   /** user id */
   get id() {
     return this._id;
@@ -33,15 +31,30 @@ export default class User implements IUser {
   get hash() {
     return this._hash;
   }
+  /** user group */
+  get group() {
+    return this._group;
+  }
+  /** user group id */
+  get groupid() {
+    return this._group.id;
+  }
 
   /**
    * wrapper on IUser
    * @param user user to wrap
    */
-  constructor(user: IUser) {
-    this._id = user.id;
-    this._login = user.login;
-    this._hash = user.hash;
+  private constructor(
+    private _id: number,
+    private _login: string,
+    private _hash: string,
+    private _group: Group
+  ) {}
+
+  static async construct(user: IUser) {
+    const group = await Group.get(user.groupid);
+    if (!group) throw new Error('invalid group');
+    return new User(user.id, user.login, user.hash, group);
   }
 
   /**
@@ -97,7 +110,7 @@ export default class User implements IUser {
    */
   static async get(id: number) {
     const user = await getDatabase().get<IUser>('SELECT * FROM users WHERE id = ?', id);
-    return user ? new User(user) : undefined;
+    return user ? User.construct(user) : undefined;
   }
 
   /**
@@ -110,7 +123,7 @@ export default class User implements IUser {
       'SELECT * FROM users WHERE login = ?',
       login
     );
-    return user ? new User(user) : undefined;
+    return user ? User.construct(user) : undefined;
   }
 
   /**
@@ -125,7 +138,7 @@ export default class User implements IUser {
       login,
       hash
     );
-    return user ? new User(user) : undefined;
+    return user ? User.construct(user) : undefined;
   }
 
   /**
@@ -139,15 +152,29 @@ export default class User implements IUser {
       const user = await User.find(login);
       if (user) return 'login';
       const result = await getDatabase().run(
-        'INSERT INTO users (login, hash) VALUES (?,?)',
+        'INSERT INTO users (login, hash, groupid) VALUES (?,?,?)',
         login,
-        hash
+        hash,
+        1
       );
-      console.log(result);
-      return new User({ id: result.lastID, login, hash });
+      return User.construct({ id: result.lastID, login, hash, groupid: 1 });
     } catch (e: any) {
       console.error(e);
       return 'unknown';
     }
+  }
+
+  /**
+   * checks user access to page
+   * @param page page to check
+   * @returns true if successful, false otherwise
+   */
+  async checkAccess(page: string) {
+    const access = await getDatabase().all<{ 1: 1 }>(
+      'SELECT 1 FROM permissions WHERE userid = ? AND page = ?',
+      this._id,
+      page
+    );
+    return access.length > 0;
   }
 }
