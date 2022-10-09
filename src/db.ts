@@ -1,4 +1,5 @@
 import sqlite3 from 'sqlite3';
+import Group from './wrappers/groups';
 
 class Database {
   private constructor(private db: sqlite3.Database) {
@@ -55,11 +56,49 @@ class Database {
       });
     });
   }
+
+  async initialize() {
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS "users" (
+        "id"	INTEGER NOT NULL UNIQUE,
+        "login"	TEXT NOT NULL UNIQUE,
+        "hash"	TEXT NOT NULL,
+        "groupid"	INTEGER NOT NULL DEFAULT 1,
+        PRIMARY KEY("id" AUTOINCREMENT)
+      );
+    `);
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS "sessions" (
+        "token"	TEXT NOT NULL UNIQUE,
+        "userid"	INTEGER NOT NULL,
+        "timestamp"	INTEGER NOT NULL,
+        PRIMARY KEY("token")
+      );
+    `);
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS "groups" (
+        "id"	INTEGER NOT NULL,
+        "name"	TEXT NOT NULL UNIQUE,
+        PRIMARY KEY("id" AUTOINCREMENT)
+      );
+    `);
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS "permissions" (
+        "page"	TEXT NOT NULL,
+        "groupid"	INTEGER,
+        "userid"	INTEGER,
+        UNIQUE("page","groupid","userid")
+      );
+    `);
+    const guest = await Group.get(1);
+    if (!guest) await Group.create('Guest');
+  }
 }
 
 let db: Database = null!;
 export async function open(filename: string) {
   db = await Database.create(filename);
+  await db.initialize();
 }
 
 export function getDatabase() {
