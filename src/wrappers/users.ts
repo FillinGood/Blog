@@ -134,7 +134,7 @@ export default class User implements IUser {
    */
   static async auth(login: string, hash: string) {
     const user = await getDatabase().get<IUser>(
-      'SELECT id FROM users WHERE login = ? AND hash = ?',
+      'SELECT * FROM users WHERE login = ? AND hash = ?',
       login,
       hash
     );
