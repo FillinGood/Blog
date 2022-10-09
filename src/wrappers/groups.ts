@@ -91,4 +91,14 @@ export default class Group implements IGroup {
     );
     return group ? new Group(group) : undefined;
   }
+
+  /**
+   * creates a new group
+   * @param name group name
+   * @returns new group
+   */
+  static async create(name: string) {
+    const result = await getDatabase().run('INSERT INTO groups (name) VALUES (?)', name);
+    return new Group({ id: result.lastID, name });
+  }
 }
