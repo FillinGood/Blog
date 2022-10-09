@@ -85,7 +85,10 @@ export default class Group implements IGroup {
    * @returns group if found
    */
   static async get(id: number) {
-    const group = await getDatabase().get<IGroup>('SELECT * FROM group WHERE id = ?', id);
+    const group = await getDatabase().get<IGroup>(
+      'SELECT * FROM groups WHERE id = ?',
+      id
+    );
     return group ? new Group(group) : undefined;
   }
 }
