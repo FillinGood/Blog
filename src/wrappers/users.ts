@@ -177,4 +177,17 @@ export default class User implements IUser {
     );
     return access.length > 0;
   }
+
+  /**
+   * checks guest user access to page
+   * @param page page to check
+   * @returns true if successful, false otherwise
+   */
+  static async checkGuestAccess(page: string) {
+    const access = await getDatabase().all<{ 1: 1 }>(
+      'SELECT 1 FROM permissions WHERE page = ?',
+      page
+    );
+    return access.length === 0;
+  }
 }
