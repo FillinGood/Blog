@@ -22,6 +22,7 @@ export async function sessionMiddleware(
         await session.refresh();
         res.cookie('token', session.token, { maxAge: sessionLife * 1000 });
         const user = session.user;
+        req.user = user;
         req.context.user = { id: user.id, name: user.login };
       }
     } else {
